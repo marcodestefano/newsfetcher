@@ -1,11 +1,31 @@
-from dotenv import load_dotenv
-import os
-import uvicorn
+from fastapi import FastAPI
+#from gnews import GNews
+from newspaper import Article
 
-load_dotenv()
+app = FastAPI()
 
-PORT = int(os.get('PORT', 8000))
-HOST = '0.0.0.0'
+""" @app.get("/")
+async def fetch_articles():
+    google_news = GNews(language='it')
+    json_resp = google_news.get_top_news()
+    article = google_news.get_full_article(json_resp[0]['url'])  # newspaper3k instance, you can access newspaper3k all attributes
+    return {len(json_resp)}
+"""
+@app.get("/")
+def default():
+    return {"Use /article?url= endpoint"}
 
-if __name__ == '__main__':
-    uvicorn.run('app.api:app', host = HOST, port = PORT, reload = True)
+@app.get("/article")
+def fetch_article(url:str = None):
+    result = {}
+    try:
+        # google_news = GNews(language='it')
+        # json_resp = google_news.get_top_news()
+        article = Article(url)
+        article.download()
+        article.parse()
+        result = {"article_title": article.title, "article_text": article.text}
+    except Exception:
+        print("Wrong URL: " + url)
+    finally:
+        return result

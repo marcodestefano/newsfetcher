@@ -1,14 +1,13 @@
 {
-    "builds": [
-      {
-        "src": "main.py",
-        "use": "@vercel/python"
-      }
-    ],
+    "builds": [{
+        "src": "app/api.py",
+        "use": "@vercel/python",
+        "config": { "maxLambdaSize": "15mb" }
+    }],
     "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "main.py"
-      }
+        {
+            "src": "/(.*)",
+            "dest": "app/api.py"
+        }
     ]
-  }
+}

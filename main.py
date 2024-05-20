@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from gnews import GNews
+#from gnews import GNews
 from newspaper import Article
 
 app = FastAPI()

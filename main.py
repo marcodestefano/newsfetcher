@@ -12,11 +12,11 @@ async def fetch_articles():
     return {len(json_resp)}
 """
 @app.get("/")
-def default():
+async def default():
     return {"Use /article?url= endpoint"}
 
 @app.get("/article")
-def fetch_article(url:str = None):
+async def fetch_article(url:str = None):
     result = {}
     try:
         # google_news = GNews(language='it')

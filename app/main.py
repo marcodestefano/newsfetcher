@@ -2,16 +2,14 @@ import uvloop
 import asyncio
 from fastapi import FastAPI
 from newspaper import Article
-import logging
 
 INTERVAL = 12 * 60 * 60
 app = FastAPI()
 cached_articles = {}
-logging.basicConfig(level=logging.INFO)
 
 async def remove_article(article_url):
     del cached_articles[article_url]
-    logging.info(f"Article removed from cache: {article_url}")
+    print(f"Article removed from cache: {article_url}")
 
 async def schedule_removal(article_url):
     await asyncio.sleep(INTERVAL)
@@ -29,7 +27,7 @@ async def fetch_article(url:str = None):
     try:
         if url in cached_articles:
             result = cached_articles[url]
-            logging.info(f"Article retrieved from cache: {url}")
+            print(f"Article retrieved from cache: {url}")
         else:
             article = Article(url)
             article.download()
@@ -38,6 +36,6 @@ async def fetch_article(url:str = None):
             cached_articles[url] = result
             asyncio.create_task(schedule_removal(url))
     except Exception:
-        logging.error("Error fetching or parsing article:", exc_info=True)
+        print("Error fetching or parsing article:", exc_info=True)
     finally:
         return result

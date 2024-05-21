@@ -1,3 +1,5 @@
+lxml_html_clean
 fastapi
 newspaper3k
-uvloop
+uvicorn
+uvlopp

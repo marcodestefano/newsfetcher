@@ -1,31 +1,43 @@
+import uvloop
+import asyncio
 from fastapi import FastAPI
-#from gnews import GNews
 from newspaper import Article
+import logging
 
+INTERVAL = 12 * 60 * 60
 app = FastAPI()
+cached_articles = {}
+logging.basicConfig(level=logging.INFO)
 
-""" @app.get("/")
-async def fetch_articles():
-    google_news = GNews(language='it')
-    json_resp = google_news.get_top_news()
-    article = google_news.get_full_article(json_resp[0]['url'])  # newspaper3k instance, you can access newspaper3k all attributes
-    return {len(json_resp)}
-"""
+async def remove_article(article_url):
+    del cached_articles[article_url]
+    logging.info(f"Article removed from cache: {article_url}")
+
+async def schedule_removal(article_url):
+    await asyncio.sleep(INTERVAL)
+    await remove_article(article_url)
+
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
 @app.get("/")
 async def default():
-    return {"Use /article?url= endpoint"}
+    return {"message": "Use /article?url= endpoint"}
 
 @app.get("/article")
 async def fetch_article(url:str = None):
     result = {}
     try:
-        # google_news = GNews(language='it')
-        # json_resp = google_news.get_top_news()
-        article = Article(url)
-        article.download()
-        article.parse()
-        result = {"article_title": article.title, "article_text": article.text}
+        if url in cached_articles:
+            result = cached_articles[url]
+            logging.info(f"Article retrieved from cache: {url}")
+        else:
+            article = Article(url)
+            article.download()
+            article.parse()
+            result = {"article_title": article.title, "article_text": article.text}
+            cached_articles[url] = result
+            asyncio.create_task(schedule_removal(url))
     except Exception:
-        print("Wrong URL: " + url)
+        logging.error("Error fetching or parsing article:", exc_info=True)
     finally:
         return result

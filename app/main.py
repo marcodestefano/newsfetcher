@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
-from gnews import GNews
 from newspaper import Article
 from openai import OpenAI
 

@@ -25,7 +25,6 @@ GEMINI_AI = 'gemini'
 OPENAI_DEFAULT_MODEL = 'gpt-3.5-turbo-0125'
 GEMINI_DEFAULT_MODEL = 'gemini-1.5-flash-latest'
 
-
 cached_google_news = None
 cache_expiration = datetime.now()
 cached_web_articles = {}

@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from gnews import GNews
@@ -33,6 +34,13 @@ cached_ai_articles = {}
 CACHE_DURATION = timedelta(minutes=5)
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 async def remove_article(articles, article_url):
     del articles[article_url]

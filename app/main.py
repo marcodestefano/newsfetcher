@@ -6,12 +6,12 @@ import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from gnews import GNews
 from newspaper import Article
 from openai import OpenAI
+from starlette.middleware.cors import CORSMiddleware
 
 load_dotenv()
 

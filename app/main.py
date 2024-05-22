@@ -79,7 +79,7 @@ async def fetch_article_content(article_url, model, ai, aikey):
     return article_text
 
 async def generate_summary_with_ai(article_text, model, ai, aikey):
-    prompt = f"Summarize the article in a maximum of 5 paragraphs, beginning each with a relevant emoji. Ensure the summary is in the same language as the article: {article_text}"
+    prompt = f"Identify the language of the following article. Then summarize it in the same language, in maximum of 5 paragraphs, beginning each with a relevant emoji: {article_text}"
     prompt = prompt.replace('\n', ' ').replace('\r', '')
     summary = None
     if ai == OPENAI_AI:

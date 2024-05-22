@@ -2,6 +2,7 @@ import uvloop
 import asyncio
 import os
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from newspaper import Article
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -35,7 +36,7 @@ async def schedule_removal(articles, article_url):
     await asyncio.sleep(TIMEOUT)
     await remove_article(articles, article_url)
 
-@app.get("/")
+@app.get("/", response_class=JSONResponse)
 async def default():
     return {"status": "OK"}
 

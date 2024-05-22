@@ -1,31 +1,15 @@
 import uvloop
 import asyncio
-import os
 from fastapi import FastAPI
 from newspaper import Article
-from datetime import datetime, timedelta
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
-
-PORT = int(os.getenv('PORT', 8000))
-TIMEOUT = int(os.getenv('TIMEOUT', 60 * 60 * 12))
-ARTICLES = int(os.getenv('ARTICLES', 5))
-MAX_ARTICLES = int(os.getenv('MAX_ARTICLES', 15))
-LANGUAGE = os.getenv('LANGUAGE','it') 
-MIN_ARTICLES = 1
-OPENAI_AI = 'openai'
-GEMINI_AI = 'gemini'
-OPENAI_DEFAULT_MODEL = 'gpt-3.5-turbo-0125'
-GEMINI_DEFAULT_MODEL = 'gemini-1.5-flash-latest'
-
-cached_google_news = None
-cache_expiration = datetime.now()
-cached_web_articles = {}
-cached_ai_articles = {}
-CACHE_DURATION = timedelta(minutes=5)
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+REMOVAL_INTERVAL = int(os.getenv('REMOVAL_INTERVAL', 12 * 60 * 60))
 app = FastAPI()
+cached_web_articles = {}
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 async def remove_article(article_url):
     del cached_web_articles[article_url]

@@ -41,3 +41,4 @@ async def fetch_article(url:str = None):
         print("Error fetching or parsing article:", exc_info=True)
     finally:
         return result
+

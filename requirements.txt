@@ -1,6 +1,11 @@
 lxml_html_clean
 fastapi
+gnews
+google-ai-generativelanguage
 newspaper3k
+openai
+protobuf
+pymongo
 python-dotenv
 uvicorn
 uvloop

@@ -39,22 +39,40 @@ async def schedule_removal(articles, article_url):
 async def default():
     return {"status": "OK"}
 
-@app.get("/article")
-async def fetch_article(url:str = None):
-    result = {}
-    try:
-        if url in cached_web_articles:
-            result = cached_web_articles[url]
-            print(f"Article retrieved from cache: {url}")
-        else:
+async def fetch_article(url: str = None):
+    result = ""
+    if not url:
+        print("Error fetching article: URL parameter missing")
+    elif url in cached_web_articles:
+        print(f"Article retrieved from cache: {url}")
+        result = cached_web_articles[url]
+    else :
+        try:
             article = Article(url)
             article.download()
             article.parse()
             result = {"article_title": article.title, "article_text": article.text}
             cached_web_articles[url] = result
-            asyncio.create_task(schedule_removal(url))
-    except Exception:
-        print("Error fetching or parsing article:", exc_info=True)
-    finally:
-        return result
+            asyncio.create_task(schedule_removal(cached_web_articles, url))
+        except Exception:
+            print("Error fetching or parsing article: ", exc_info=True)
+    return result
+
+async def fetch_article_content(article_url, model, ai, aikey):
+    article_text = ""
+    try:
+        article = await fetch_article(url=article_url)
+        article_text = article["article_text"]
+        if article_url in cached_ai_articles:
+            print(f"Article retrieved from AI cache: {article_url}")
+            article_text = cached_ai_articles[article_url]
+        elif ai and aikey:
+            summary = await generate_summary_with_ai(article_text, model, ai, aikey)
+            if summary:
+                article_text = summary
+                cached_ai_articles[article_url] = article_text
+                asyncio.create_task(schedule_removal(cached_ai_articles, article_url))
+    except Exception as e:
+        print("Error generating summary with AI:", e)
+    return article_text
 

@@ -1,13 +1,15 @@
-import uvloop
 import asyncio
+import google.generativeai as geminiai
+import json
+import uvloop
 import os
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from newspaper import Article
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from openai import OpenAI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, StreamingResponse
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from newspaper import Article
+from openai import OpenAI
 
 load_dotenv()
 

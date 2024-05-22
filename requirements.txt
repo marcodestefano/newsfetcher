@@ -1,5 +1,6 @@
 lxml_html_clean
 fastapi
 newspaper3k
+python-dotenv
 uvicorn
 uvloop

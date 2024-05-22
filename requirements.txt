@@ -1,5 +1,6 @@
 lxml_html_clean
 fastapi
+git+https://github.com/marcodestefano/GNews.git
 google-generativeai
 newspaper3k
 openai

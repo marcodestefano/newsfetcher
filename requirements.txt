@@ -1,6 +1,6 @@
 lxml_html_clean
 fastapi
-google-ai-generativelanguage
+google-generativeai
 newspaper3k
 openai
 python-dotenv

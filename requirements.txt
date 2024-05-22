@@ -2,7 +2,6 @@ lxml_html_clean
 fastapi
 google-generativeai
 gnews
-newspaper3k
 openai
 python-dotenv
 uvicorn

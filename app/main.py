@@ -14,6 +14,7 @@ from openai import OpenAI
 
 load_dotenv()
 
+PROMPT = os.getenv('PROMPT', "Identify the language of the following article and summarize it in the same language, in maximum of 5 paragraphs, beginning each with a relevant emoji. Answer only with the summary. The article is the following:")
 PORT = int(os.getenv('PORT', 8000))
 TIMEOUT = int(os.getenv('TIMEOUT', 60 * 60 * 12))
 ARTICLES = int(os.getenv('ARTICLES', 5))
@@ -79,7 +80,7 @@ async def fetch_article_content(article_url, model, ai, aikey):
     return article_text
 
 async def generate_summary_with_ai(article_text, model, ai, aikey):
-    prompt = f"Identify the language of the following article. Then summarize it in the same language, in maximum of 5 paragraphs, beginning each with a relevant emoji: {article_text}"
+    prompt = f"{PROMPT} {article_text}"
     prompt = prompt.replace('\n', ' ').replace('\r', '')
     summary = None
     if ai == OPENAI_AI:

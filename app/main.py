@@ -131,18 +131,23 @@ async def fetch_news(
             cached_google_news = google_news.get_top_news()
             cache_expiration = datetime.now() + CACHE_DURATION
         json_resp = cached_google_news
-        first_article = True
-        yield '['  # Inizio dell'array JSON
-        for i in range(num):
-            if not first_article:
-                yield ','  # Aggiungi una virgola prima di ogni articolo tranne il primo
+        
+        async def fetch_and_yield_article(i):
             article_url = json_resp[i]['url']
             article_content = await fetch_article_content(article_url, model, ai, aikey)
             article = {
                 "title": json_resp[i]['title'],
                 "content": article_content
             }
-            yield json.dumps(article)
+            return json.dumps(article)
+        
+        first_article = True
+        yield '['  # Inizio dell'array JSON
+        tasks = [fetch_and_yield_article(i) for i in range(num)]
+        for task in asyncio.as_completed(tasks):
+            if not first_article:
+                yield ','  # Aggiungi una virgola prima di ogni articolo tranne il primo
+            yield await task
             first_article = False
         yield ']'  # Fine dell'array JSON
             

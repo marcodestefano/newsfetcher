@@ -15,17 +15,21 @@ from starlette.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
+MIN_ARTICLES = 1
+OPENAI_AI = 'openai'
+GEMINI_AI = 'gemini'
+OPENAI_DEFAULT_MODEL = 'gpt-3.5-turbo-0125'
+GEMINI_DEFAULT_MODEL = 'gemini-1.5-flash-latest'
+AI = os.getenv('AI')
+AI_MODEL = os.getenv('AI_MODEL')
+AI_KEY = os.getenv('AI_KEY')
 PROMPT = os.getenv('PROMPT', "Identify the language of the following article and summarize it in the same language, in maximum of 5 paragraphs, beginning each with a relevant emoji. Answer only with the summary. The article is the following:")
 PORT = int(os.getenv('PORT', 8000))
 TIMEOUT = int(os.getenv('TIMEOUT', 60 * 60 * 12))
 ARTICLES = int(os.getenv('ARTICLES', 5))
 MAX_ARTICLES = int(os.getenv('MAX_ARTICLES', 15))
 LANGUAGE = os.getenv('LANGUAGE','it') 
-MIN_ARTICLES = 1
-OPENAI_AI = 'openai'
-GEMINI_AI = 'gemini'
-OPENAI_DEFAULT_MODEL = 'gpt-3.5-turbo-0125'
-GEMINI_DEFAULT_MODEL = 'gemini-1.5-flash-latest'
+
 
 cached_google_news = None
 cache_expiration = datetime.now()
@@ -125,9 +129,9 @@ async def fetch_news(
     data = await request.json()
     num = data.get('num', ARTICLES)
     language = data.get('language', LANGUAGE)
-    ai = data.get('ai', None)
-    model = data.get('model', None)
-    aikey = data.get('aikey', None)
+    ai = data.get('ai', AI)
+    model = data.get('model', AI_MODEL)
+    aikey = data.get('aikey', AI_KEY)
 
     if num < MIN_ARTICLES or num > MAX_ARTICLES:
         return {"Error": f"Invalid number of articles. The number of articles has to be between {MIN_ARTICLES} and {MAX_ARTICLES}"}

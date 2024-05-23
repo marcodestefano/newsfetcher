@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from gnews import GNews
 from newspaper import Article
@@ -29,7 +29,6 @@ TIMEOUT = int(os.getenv('TIMEOUT', 60 * 60 * 12))
 ARTICLES = int(os.getenv('ARTICLES', 5))
 MAX_ARTICLES = int(os.getenv('MAX_ARTICLES', 15))
 LANGUAGE = os.getenv('LANGUAGE','it') 
-
 
 cached_google_news = None
 cache_expiration = datetime.now()
@@ -74,9 +73,11 @@ async def fetch_article(url: str = None):
     return result
 
 async def fetch_article_content(article_url, model, ai, aikey):
+    article_title = ""
     article_text = ""
     try:
         article = await fetch_article(url=article_url)
+        article_title = article["article_title"]
         article_text = article["article_text"]
         if article_url in cached_ai_articles:
             print(f"Article retrieved from AI cache: {article_url}")
@@ -89,7 +90,7 @@ async def fetch_article_content(article_url, model, ai, aikey):
                 asyncio.create_task(schedule_removal(cached_ai_articles, article_url))
     except Exception as e:
         print("Error generating summary with AI:", e)
-    return article_text
+    return {"title": article_title, "content": article_text}
 
 async def generate_summary_with_ai(article_text, model, ai, aikey):
     prompt = f"{PROMPT} {article_text}"
@@ -122,46 +123,47 @@ async def generate_summary_with_ai(article_text, model, ai, aikey):
 async def default():
     return {"status": "OK"}
 
-@app.post("/news", response_class=StreamingResponse)
+@app.post("/news", response_class=JSONResponse)
 async def fetch_news(
     request: Request
 ):
-    data = await request.json()
-    num = data.get('num', ARTICLES)
-    language = data.get('language', LANGUAGE)
-    ai = data.get('ai', AI)
-    model = data.get('model', AI_MODEL)
-    aikey = data.get('aikey', AI_KEY)
+    try:
+        data = await request.json()
+        num_articles = data.get('num', ARTICLES)
+    except:
+        data = None
+        num_articles = ARTICLES
 
-    if num < MIN_ARTICLES or num > MAX_ARTICLES:
-        return {"Error": f"Invalid number of articles. The number of articles has to be between {MIN_ARTICLES} and {MAX_ARTICLES}"}
-    
-    async def article_generator():
+    language = data.get('language', LANGUAGE) if data else LANGUAGE
+
+    async def fetch_google_news():
         global cached_google_news, cache_expiration
-        if cached_google_news is None or datetime.now() > cache_expiration:
+        if cached_google_news is None or len(cached_google_news) < num_articles or datetime.now() > cache_expiration:
             print("Rebuilding GNews cache")
-            google_news = GNews(language=language)
-            cached_google_news = google_news.get_top_news()
+            google_news = GNews(language=language, max_results=num_articles)
+            news = google_news.get_top_news()
+            cached_google_news = [{"url": item["url"], "title": item["title"]} for item in news]
             cache_expiration = datetime.now() + CACHE_DURATION
-        json_resp = cached_google_news
+        return cached_google_news[:num_articles]
         
-        async def fetch_and_yield_article(i):
-            article_url = json_resp[i]['url']
-            article_content = await fetch_article_content(article_url, model, ai, aikey)
-            article = {
-                "title": json_resp[i]['title'],
-                "content": article_content
-            }
-            return json.dumps(article)
-        
-        first_article = True
-        yield '['  # Inizio dell'array JSON
-        tasks = [fetch_and_yield_article(i) for i in range(num)]
-        for task in asyncio.as_completed(tasks):
-            if not first_article:
-                yield ','  # Aggiungi una virgola prima di ogni articolo tranne il primo
-            yield await task
-            first_article = False
-        yield ']'  # Fine dell'array JSON
-            
-    return StreamingResponse(article_generator(), media_type="application/json")
+    return JSONResponse(content=await fetch_google_news())
+
+@app.post("/article", response_class=JSONResponse)
+async def fetch_article_content_endpoint(
+    request: Request
+):
+    try:
+        data = await request.json()
+        article_url = data.get('url')
+        ai = data.get('ai', AI)
+        model = data.get('model', AI_MODEL)
+        aikey = data.get('aikey', AI_KEY)
+
+        if not article_url:
+            return JSONResponse({"error": "Article URL is required"}, status_code=400)
+
+        article_content = await fetch_article_content(article_url, model, ai, aikey)
+        return JSONResponse(article_content)
+    except Exception as e:
+        print("Error in fetch_article_content_endpoint:", e)
+        return JSONResponse({"error": "An error occurred while fetching the article content"}, status_code=500)

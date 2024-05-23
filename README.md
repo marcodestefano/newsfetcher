@@ -63,17 +63,25 @@ fastapi dev main.py
 - **Method:** `GET`
 - **Response:** JSON object with status "OK".
 
-#### Fetch News
+#### Fetch News URLs
 
 - **URL:** `/news`
 - **Method:** `POST`
 - **Parameters:**
   - `num` (int): Number of articles to fetch. Default is 5.
   - `language` (str): Language of the news. Default is 'it'.
+- **Response:** JSON array of articles with "url" and "title".
+
+#### Fetch Article content
+
+- **URL:** `/article`
+- **Method:** `POST`
+- **Parameters:**
+  - `url` (str): URL of the article to fetch.
   - `ai` (str): AI service to use ('openai' or 'gemini'). Default is `None`. If ai is not defined, the article is not summarized.
   - `model` (str): Model to use with the AI service. Default models are used if not specified: gpt-3.5-turbo-0125 for openai and gemini-1.5-flash-latest for gemini
   - `aikey` (str): API key for the AI service. Default is `None`.
-- **Response:** Streaming JSON array of articles with titles and summarized content.
+- **Response:** JSON object with "title" and "content".
 
 ### Example Request
 
@@ -82,7 +90,15 @@ Using Postman or any HTTP client, send a POST request to `/news`:
 ```json
 {
   "num": 1,
-  "language": "en",
+  "language": "en"
+}
+```
+
+And to `/article`:
+
+```json
+{
+  "url": "https://example.com/article",
   "ai": "openai",
   "model": "gpt-3.5-turbo",
   "aikey": "your_openai_api_key"

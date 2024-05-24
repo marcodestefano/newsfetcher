@@ -68,8 +68,8 @@ async def fetch_article(url: str = None):
             result = {"article_title": article.title, "article_text": article.text}
             cached_web_articles[url] = result
             asyncio.create_task(schedule_removal(cached_web_articles, url))
-        except Exception:
-            print("Error fetching or parsing article: ", exc_info=True)
+        except Exception as e:
+            print("Error fetching or parsing article:", e)
     return result
 
 async def fetch_article_content(article_url, model, ai, aikey):

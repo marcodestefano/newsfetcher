@@ -57,7 +57,7 @@ async def fetch_article(url: str = None):
     result = ""
     if not url:
         print("Error fetching article: URL parameter missing")
-    elif url in cached_web_articles:
+    elif url in cached_web_articles and cached_web_articles[url]!="No content available":
         print(f"Article retrieved from cache: {url}")
         result = cached_web_articles[url]
     else :
